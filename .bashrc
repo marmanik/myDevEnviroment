@@ -137,8 +137,8 @@ export PATH\
 
 #gsmyrnaios_android:
 export ANDROID_HOME=/home/gsmyrnaios/Android/Sdk
-#PATH=$PATH:$ANDROID_HOME/Sdk
-#export PATH\
+PATH=$PATH:$ANDROID_HOME/Sdk
+export PATH\
 
 #gsmyrnaios_tomcat:
 #export TOMCAT_HOME=/home/gsmyrnaios/dev/tools/tomcat/apache-tomcat-8.0.28
