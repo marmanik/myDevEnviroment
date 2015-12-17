@@ -1,0 +1,136 @@
+(function() {
+  var DOMStylesReader, Mixin, rotate,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  Mixin = require('mixto');
+
+  module.exports = DOMStylesReader = (function(_super) {
+    __extends(DOMStylesReader, _super);
+
+    function DOMStylesReader() {
+      return DOMStylesReader.__super__.constructor.apply(this, arguments);
+    }
+
+
+    /* Public */
+
+    DOMStylesReader.prototype.retrieveStyleFromDom = function(scopes, property, shadowRoot, cache) {
+      var filter, key, node, parent, scope, style, value, _base, _i, _len, _ref;
+      if (shadowRoot == null) {
+        shadowRoot = true;
+      }
+      if (cache == null) {
+        cache = true;
+      }
+      this.ensureCache();
+      key = scopes.join(' ');
+      if (cache && (((_ref = this.constructor.domStylesCache[key]) != null ? _ref[property] : void 0) != null)) {
+        return this.constructor.domStylesCache[key][property];
+      }
+      this.ensureDummyNodeExistence(shadowRoot);
+      if ((_base = this.constructor.domStylesCache)[key] == null) {
+        _base[key] = {};
+      }
+      parent = this.dummyNode;
+      for (_i = 0, _len = scopes.length; _i < _len; _i++) {
+        scope = scopes[_i];
+        node = document.createElement('span');
+        node.className = scope.replace(/\.+/g, ' ');
+        if (parent != null) {
+          parent.appendChild(node);
+        }
+        parent = node;
+      }
+      style = getComputedStyle(parent);
+      filter = style.getPropertyValue('-webkit-filter');
+      value = style.getPropertyValue(property);
+      if (filter.indexOf('hue-rotate') !== -1) {
+        value = this.rotateHue(value, filter);
+      }
+      this.dummyNode.innerHTML = '';
+      if (value !== "") {
+        this.constructor.domStylesCache[key][property] = value;
+      }
+      return value;
+    };
+
+
+    /* Internal */
+
+    DOMStylesReader.prototype.ensureDummyNodeExistence = function(shadowRoot) {
+      if (this.dummyNode == null) {
+        this.dummyNode = document.createElement('span');
+        this.dummyNode.style.visibility = 'hidden';
+      }
+      return this.getDummyDOMRoot(shadowRoot).appendChild(this.dummyNode);
+    };
+
+    DOMStylesReader.prototype.ensureCache = function() {
+      var _base;
+      return (_base = this.constructor).domStylesCache != null ? _base.domStylesCache : _base.domStylesCache = {};
+    };
+
+    DOMStylesReader.prototype.invalidateCache = function() {
+      return this.constructor.domStylesCache = {};
+    };
+
+    DOMStylesReader.prototype.invalidateIfFirstTokenization = function() {
+      if (this.constructor.hasTokenizedOnce) {
+        return;
+      }
+      this.invalidateCache();
+      return this.constructor.hasTokenizedOnce = true;
+    };
+
+    DOMStylesReader.prototype.rotateHue = function(value, filter) {
+      var a, b, g, hue, r, _, _ref, _ref1, _ref2, _ref3;
+      _ref = value.match(/rgb(a?)\((\d+), (\d+), (\d+)(, (\d+(\.\d+)?))?\)/), _ = _ref[0], _ = _ref[1], r = _ref[2], g = _ref[3], b = _ref[4], _ = _ref[5], a = _ref[6];
+      _ref1 = filter.match(/hue-rotate\((\d+)deg\)/), _ = _ref1[0], hue = _ref1[1];
+      _ref2 = [r, g, b, a, hue].map(Number), r = _ref2[0], g = _ref2[1], b = _ref2[2], a = _ref2[3], hue = _ref2[4];
+      _ref3 = rotate(r, g, b, hue), r = _ref3[0], g = _ref3[1], b = _ref3[2];
+      if (isNaN(a)) {
+        return "rgb(" + r + ", " + g + ", " + b + ")";
+      } else {
+        return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
+      }
+    };
+
+    return DOMStylesReader;
+
+  })(Mixin);
+
+  rotate = function(r, g, b, angle) {
+    var B, G, R, clamp, cos, hueRotateB, hueRotateG, hueRotateR, lumB, lumG, lumR, matrix, sin;
+    clamp = function(num) {
+      return Math.ceil(Math.max(0, Math.min(255, num)));
+    };
+    matrix = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+    lumR = 0.2126;
+    lumG = 0.7152;
+    lumB = 0.0722;
+    hueRotateR = 0.143;
+    hueRotateG = 0.140;
+    hueRotateB = 0.283;
+    cos = Math.cos(angle * Math.PI / 180);
+    sin = Math.sin(angle * Math.PI / 180);
+    matrix[0] = lumR + (1 - lumR) * cos - (lumR * sin);
+    matrix[1] = lumG - (lumG * cos) - (lumG * sin);
+    matrix[2] = lumB - (lumB * cos) + (1 - lumB) * sin;
+    matrix[3] = lumR - (lumR * cos) + hueRotateR * sin;
+    matrix[4] = lumG + (1 - lumG) * cos + hueRotateG * sin;
+    matrix[5] = lumB - (lumB * cos) - (hueRotateB * sin);
+    matrix[6] = lumR - (lumR * cos) - ((1 - lumR) * sin);
+    matrix[7] = lumG - (lumG * cos) + lumG * sin;
+    matrix[8] = lumB + (1 - lumB) * cos + lumB * sin;
+    R = clamp(matrix[0] * r + matrix[1] * g + matrix[2] * b);
+    G = clamp(matrix[3] * r + matrix[4] * g + matrix[5] * b);
+    B = clamp(matrix[6] * r + matrix[7] * g + matrix[8] * b);
+    return [R, G, B];
+  };
+
+}).call(this);
+
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAiZmlsZSI6ICIiLAogICJzb3VyY2VSb290IjogIiIsCiAgInNvdXJjZXMiOiBbCiAgICAiL2hvbWUvZ3NteXJuYWlvcy8uYXRvbS9wYWNrYWdlcy9taW5pbWFwL2xpYi9taXhpbnMvZG9tLXN0eWxlcy1yZWFkZXIuY29mZmVlIgogIF0sCiAgIm5hbWVzIjogW10sCiAgIm1hcHBpbmdzIjogIkFBQUE7QUFBQSxNQUFBLDhCQUFBO0lBQUE7bVNBQUE7O0FBQUEsRUFBQSxLQUFBLEdBQVEsT0FBQSxDQUFRLE9BQVIsQ0FBUixDQUFBOztBQUFBLEVBSUEsTUFBTSxDQUFDLE9BQVAsR0FDTTtBQUNKLHNDQUFBLENBQUE7Ozs7S0FBQTs7QUFBQTtBQUFBLGdCQUFBOztBQUFBLDhCQWFBLG9CQUFBLEdBQXNCLFNBQUMsTUFBRCxFQUFTLFFBQVQsRUFBbUIsVUFBbkIsRUFBb0MsS0FBcEMsR0FBQTtBQUNwQixVQUFBLHFFQUFBOztRQUR1QyxhQUFXO09BQ2xEOztRQUR3RCxRQUFNO09BQzlEO0FBQUEsTUFBQSxJQUFDLENBQUEsV0FBRCxDQUFBLENBQUEsQ0FBQTtBQUFBLE1BRUEsR0FBQSxHQUFNLE1BQU0sQ0FBQyxJQUFQLENBQVksR0FBWixDQUZOLENBQUE7QUFJQSxNQUFBLElBQUcsS0FBQSxJQUFVLDJGQUFiO0FBQ0UsZUFBTyxJQUFDLENBQUEsV0FBVyxDQUFDLGNBQWUsQ0FBQSxHQUFBLENBQUssQ0FBQSxRQUFBLENBQXhDLENBREY7T0FKQTtBQUFBLE1BT0EsSUFBQyxDQUFBLHdCQUFELENBQTBCLFVBQTFCLENBUEEsQ0FBQTs7YUFRNEIsQ0FBQSxHQUFBLElBQVE7T0FScEM7QUFBQSxNQVVBLE1BQUEsR0FBUyxJQUFDLENBQUEsU0FWVixDQUFBO0FBV0EsV0FBQSw2Q0FBQTsyQkFBQTtBQUNFLFFBQUEsSUFBQSxHQUFPLFFBQVEsQ0FBQyxhQUFULENBQXVCLE1BQXZCLENBQVAsQ0FBQTtBQUFBLFFBR0EsSUFBSSxDQUFDLFNBQUwsR0FBaUIsS0FBSyxDQUFDLE9B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
+
+//# sourceURL=/home/gsmyrnaios/.atom/packages/minimap/lib/mixins/dom-styles-reader.coffee

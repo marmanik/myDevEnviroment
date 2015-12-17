@@ -1,0 +1,5 @@
+todolist:
+  title: "toDoList"
+  paths: [
+    "/home/gsmyrnaios/dev/test-projects/toDoList"
+  ]

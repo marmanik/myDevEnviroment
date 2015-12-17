@@ -1,0 +1,127 @@
+(function() {
+  var mouseEvent, objectCenterCoordinates, touchEvent;
+
+  mouseEvent = function(type, properties) {
+    var defaults, k, v;
+    defaults = {
+      bubbles: true,
+      cancelable: type !== "mousemove",
+      view: window,
+      detail: 0,
+      pageX: 0,
+      pageY: 0,
+      clientX: 0,
+      clientY: 0,
+      ctrlKey: false,
+      altKey: false,
+      shiftKey: false,
+      metaKey: false,
+      button: 0,
+      relatedTarget: void 0
+    };
+    for (k in defaults) {
+      v = defaults[k];
+      if (properties[k] == null) {
+        properties[k] = v;
+      }
+    }
+    return new MouseEvent(type, properties);
+  };
+
+  touchEvent = function(type, touches) {
+    var e, firstTouch, properties;
+    firstTouch = touches[0];
+    properties = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      ctrlKey: false,
+      altKey: false,
+      shiftKey: false,
+      metaKey: false,
+      relatedTarget: void 0
+    };
+    e = new Event(type, properties);
+    e.pageX = firstTouch.pageX;
+    e.pageY = firstTouch.pageY;
+    e.clientX = firstTouch.clientX;
+    e.clientY = firstTouch.clientY;
+    e.touches = e.targetTouches = e.changedTouches = touches;
+    return e;
+  };
+
+  objectCenterCoordinates = function(obj) {
+    var height, left, top, width, _ref;
+    _ref = obj.getBoundingClientRect(), top = _ref.top, left = _ref.left, width = _ref.width, height = _ref.height;
+    return {
+      x: left + width / 2,
+      y: top + height / 2
+    };
+  };
+
+  module.exports = {
+    objectCenterCoordinates: objectCenterCoordinates,
+    mouseEvent: mouseEvent
+  };
+
+  ['mousedown', 'mousemove', 'mouseup', 'click'].forEach(function(key) {
+    return module.exports[key] = function(obj, _arg) {
+      var btn, cx, cy, x, y, _ref, _ref1;
+      _ref = _arg != null ? _arg : {}, x = _ref.x, y = _ref.y, cx = _ref.cx, cy = _ref.cy, btn = _ref.btn;
+      if (!((x != null) && (y != null))) {
+        _ref1 = objectCenterCoordinates(obj), x = _ref1.x, y = _ref1.y;
+      }
+      if (!((cx != null) && (cy != null))) {
+        cx = x;
+        cy = y;
+      }
+      return obj.dispatchEvent(mouseEvent(key, {
+        pageX: x,
+        pageY: y,
+        clientX: cx,
+        clientY: cy,
+        button: btn
+      }));
+    };
+  });
+
+  module.exports.mousewheel = function(obj, deltaX, deltaY) {
+    if (deltaX == null) {
+      deltaX = 0;
+    }
+    if (deltaY == null) {
+      deltaY = 0;
+    }
+    return obj.dispatchEvent(mouseEvent('mousewheel', {
+      deltaX: deltaX,
+      deltaY: deltaY
+    }));
+  };
+
+  ['touchstart', 'touchmove', 'touchend'].forEach(function(key) {
+    return module.exports[key] = function(obj, _arg) {
+      var cx, cy, x, y, _ref, _ref1;
+      _ref = _arg != null ? _arg : {}, x = _ref.x, y = _ref.y, cx = _ref.cx, cy = _ref.cy;
+      if (!((x != null) && (y != null))) {
+        _ref1 = objectCenterCoordinates(obj), x = _ref1.x, y = _ref1.y;
+      }
+      if (!((cx != null) && (cy != null))) {
+        cx = x;
+        cy = y;
+      }
+      return obj.dispatchEvent(touchEvent(key, [
+        {
+          pageX: x,
+          pageY: y,
+          clientX: cx,
+          clientY: cy
+        }
+      ]));
+    };
+  });
+
+}).call(this);
+
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAiZmlsZSI6ICIiLAogICJzb3VyY2VSb290IjogIiIsCiAgInNvdXJjZXMiOiBbCiAgICAiL2hvbWUvZ3NteXJuYWlvcy8uYXRvbS9wYWNrYWdlcy9taW5pbWFwL3NwZWMvaGVscGVycy9ldmVudHMuY29mZmVlIgogIF0sCiAgIm5hbWVzIjogW10sCiAgIm1hcHBpbmdzIjogIkFBQ0E7QUFBQSxNQUFBLCtDQUFBOztBQUFBLEVBQUEsVUFBQSxHQUFhLFNBQUMsSUFBRCxFQUFPLFVBQVAsR0FBQTtBQUNYLFFBQUEsY0FBQTtBQUFBLElBQUEsUUFBQSxHQUFXO0FBQUEsTUFDVCxPQUFBLEVBQVMsSUFEQTtBQUFBLE1BRVQsVUFBQSxFQUFhLElBQUEsS0FBVSxXQUZkO0FBQUEsTUFHVCxJQUFBLEVBQU0sTUFIRztBQUFBLE1BSVQsTUFBQSxFQUFRLENBSkM7QUFBQSxNQUtULEtBQUEsRUFBTyxDQUxFO0FBQUEsTUFNVCxLQUFBLEVBQU8sQ0FORTtBQUFBLE1BT1QsT0FBQSxFQUFTLENBUEE7QUFBQSxNQVFULE9BQUEsRUFBUyxDQVJBO0FBQUEsTUFTVCxPQUFBLEVBQVMsS0FUQTtBQUFBLE1BVVQsTUFBQSxFQUFRLEtBVkM7QUFBQSxNQVdULFFBQUEsRUFBVSxLQVhEO0FBQUEsTUFZVCxPQUFBLEVBQVMsS0FaQTtBQUFBLE1BYVQsTUFBQSxFQUFRLENBYkM7QUFBQSxNQWNULGFBQUEsRUFBZSxNQWROO0tBQVgsQ0FBQTtBQWlCQSxTQUFBLGFBQUE7c0JBQUE7VUFBK0M7QUFBL0MsUUFBQSxVQUFXLENBQUEsQ0FBQSxDQUFYLEdBQWdCLENBQWhCO09BQUE7QUFBQSxLQWpCQTtXQW1CSSxJQUFBLFVBQUEsQ0FBVyxJQUFYLEVBQWlCLFVBQWpCLEVBcEJPO0VBQUEsQ0FBYixDQUFBOztBQUFBLEVBc0JBLFVBQUEsR0FBYSxTQUFDLElBQUQsRUFBTyxPQUFQLEdBQUE7QUFDWCxRQUFBLHlCQUFBO0FBQUEsSUFBQSxVQUFBLEdBQWEsT0FBUSxDQUFBLENBQUEsQ0FBckIsQ0FB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
+
+//# sourceURL=/home/gsmyrnaios/.atom/packages/minimap/spec/helpers/events.coffee
