@@ -97,6 +97,10 @@ alias logvfuk='tail -f ~/dev/tools/tomcat/apache-tomcat-6.0.32/logs/catalina.out
 alias cdvfuk='cd /home/gsmyrnaios/dev/tools/tomcat/apache-tomcat-6.0.32/bin'
 alias cdtmnl='cd /home/gsmyrnaios/dev/tools/tomcat/apache-tomcat-6.0.44/bin'
 
+alias sublime='/opt/sublime_text/sublime_text'
+
+alias mongo='/home/gsmyrnaios/dev/tools/mongo/mongodb-linux-x86_64-ubuntu1404-3.2.1/bin/mongod --dbpath /home/gsmyrnaios/dev/tools/mongo/data'
+
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
@@ -139,6 +143,9 @@ export PATH\
 export ANDROID_HOME=/home/gsmyrnaios/Android/Sdk
 PATH=$PATH:$ANDROID_HOME/Sdk
 export PATH\
+
+#gsmyrnaios_mongo
+export PATH=/home/gsmyrnaios/dev/tools/mongo/mongodb-linux-x86_64-ubuntu1404-3.2.1/bin:$PATH
 
 #gsmyrnaios_tomcat:
 #export TOMCAT_HOME=/home/gsmyrnaios/dev/tools/tomcat/apache-tomcat-8.0.28
